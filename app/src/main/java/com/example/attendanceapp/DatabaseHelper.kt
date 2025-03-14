@@ -2,9 +2,9 @@ package com.example.attendanceapp
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 import com.google.firebase.Timestamp
 import java.util.*
+import com.google.firebase.firestore.FieldPath
 
 class DatabaseHelper {
     private val db = FirebaseFirestore.getInstance()
@@ -129,13 +129,17 @@ class DatabaseHelper {
                     return@addOnSuccessListener
                 }
 
+                // This needs to be fixed - we can't use whereIn with "id" since it's not actually a field
                 db.collection("courses")
-                    .whereIn("id", courseIds)
+                    .whereIn(
+                        FieldPath.documentId(),
+                        courseIds
+                    )  // Using document ID instead of "id" field
                     .get()
                     .addOnSuccessListener { courses ->
                         val coursesList = courses.map { doc ->
                             val data = doc.data
-                            data["id"] = doc.id
+                            data["id"] = doc.id  // Add the document ID as "id" field
                             data
                         }
                         callback(coursesList)
