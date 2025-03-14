@@ -84,21 +84,9 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun navigateToAppropriateScreen() {
-        val userId = auth.currentUser?.uid ?: return
-
-        databaseHelper.getUserRole(userId) { role ->
-            val intent = when (role) {
-                "teacher" -> Intent(this, TeacherActivity::class.java)
-                "student" -> Intent(this, StudentActivity::class.java)
-                else -> {
-                    // Default to student view if role is not specified
-                    Intent(this, StudentActivity::class.java)
-                }
-            }
-
-            startActivity(intent)
-            finish() // Close login activity
-        }
+        val intent = Intent(this, StudentActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }
 

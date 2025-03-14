@@ -84,7 +84,8 @@ class MainActivity : ComponentActivity() {
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED) {
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             permissionsToRequest.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
@@ -108,65 +109,61 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun continueToNextScreen() {
-        // Check if Bluetooth is available and enabled
-        if (bluetoothHelper.isBluetoothSupported() && !bluetoothHelper.isBluetoothEnabled()) {
-            bluetoothHelper.requestEnableBluetooth(this)
-        }
-
-        // Navigate based on auth state
+        // Check if user is logged in
         if (auth.currentUser != null) {
-            startActivity(Intent(this, HomeActivity::class.java))
+            startActivity(Intent(this, StudentActivity::class.java))
         } else {
             startActivity(Intent(this, LoginActivity::class.java))
         }
         finish()
     }
-}
 
-@Composable
-fun SplashScreen(onSplashComplete: () -> Unit) {
-    LaunchedEffect(Unit) {
-        delay(1500)
-        onSplashComplete()
-    }
 
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text("Attendance App")
-            Spacer(modifier = Modifier.height(16.dp))
-            CircularProgressIndicator()
+    @Composable
+    fun SplashScreen(onSplashComplete: () -> Unit) {
+        LaunchedEffect(Unit) {
+            delay(1500)
+            onSplashComplete()
+        }
+
+        Surface(modifier = Modifier.fillMaxSize()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text("Attendance App")
+                Spacer(modifier = Modifier.height(16.dp))
+                CircularProgressIndicator()
+            }
         }
     }
-}
 
-@Composable
-fun PermissionDeniedScreen(onRetryRequest: () -> Unit) {
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "Permissions Required",
-                style = MaterialTheme.typography.headlineSmall
-            )
+    @Composable
+    fun PermissionDeniedScreen(onRetryRequest: () -> Unit) {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "Permissions Required",
+                    style = MaterialTheme.typography.headlineSmall
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "This app needs location and Bluetooth permissions to function properly. " +
-                        "Please grant all necessary permissions to continue.",
-                style = MaterialTheme.typography.bodyMedium
-            )
+                Text(
+                    text = "This app needs location and Bluetooth permissions to function properly. " +
+                            "Please grant all necessary permissions to continue.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Button(onClick = onRetryRequest) {
-                Text("Grant Permissions")
+                Button(onClick = onRetryRequest) {
+                    Text("Grant Permissions")
+                }
             }
         }
     }

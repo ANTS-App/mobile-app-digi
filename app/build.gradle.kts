@@ -54,9 +54,14 @@ dependencies {
     implementation(libs.material3)
 
     // Firebase
-    implementation(platform(libs.firebase.bom.v3273))
-    implementation(libs.com.google.firebase.firebase.auth.ktx)
-    implementation(libs.com.google.firebase.firebase.database.ktx)
+    //implementation(platform(libs.firebase.bom.v3273))
+    //implementation(libs.com.google.firebase.firebase.auth.ktx)
+    //implementation(libs.com.google.firebase.firebase.database.ktx)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.auth)
+
 
     // ClockView (from JitPack)
     implementation(libs.samlss.clockview)

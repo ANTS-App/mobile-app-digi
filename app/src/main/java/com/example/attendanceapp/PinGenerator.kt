@@ -6,7 +6,7 @@ import kotlin.random.Random
 class PinGenerator {
     companion object {
         // Generate a random PIN with specified length
-        fun generatePin(length: Int = 6): String {
+        private fun generatePin(length: Int = 6): String {
             // Use random to generate a PIN
             val random = Random
             val pin = StringBuilder()

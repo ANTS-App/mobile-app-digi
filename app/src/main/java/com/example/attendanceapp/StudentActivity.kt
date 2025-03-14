@@ -1,6 +1,7 @@
 package com.example.attendanceapp
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
@@ -58,11 +59,16 @@ class StudentActivity : ComponentActivity() {
                         databaseHelper = databaseHelper,
                         locationHelper = locationHelper,
                         bluetoothHelper = bluetoothHelper,
-                        onRequestPermissions = { requestPermissions() }
+                        onRequestPermissions = { requestPermissions() },
+                        onNavigateToTimetable = { navigateToTimetableSelection() }
                     )
                 }
             }
         }
+    }
+
+    private fun navigateToTimetableSelection() {
+        startActivity(Intent(this, TimetableSelectionActivity::class.java))
     }
 
     private fun requestPermissions() {
@@ -102,12 +108,11 @@ fun StudentScreen(
     databaseHelper: DatabaseHelper,
     locationHelper: LocationHelper,
     bluetoothHelper: BluetoothHelper,
-    onRequestPermissions: () -> Unit
+    onRequestPermissions: () -> Unit,
+    onNavigateToTimetable: () -> Unit
 ) {
-    rememberCoroutineScope()
-    var pin by remember { mutableStateOf("") }
     var statusMessage by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    val isLoading by remember { mutableStateOf(false) }
     var courses by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
 
     LaunchedEffect(Unit) {
@@ -122,8 +127,9 @@ fun StudentScreen(
         }
 
         // Load student courses if user is logged in
-        databaseHelper.getCurrentUserId()?.let { userId ->
-            databaseHelper.getStudentCourses(userId) { loadedCourses ->
+        databaseHelper.getCurrentUserId()?.let { _ ->
+            // Assuming DatabaseHelper internally uses the current user ID
+            databaseHelper.getStudentCourses { loadedCourses ->
                 courses = loadedCourses
             }
         }
@@ -132,20 +138,13 @@ fun StudentScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Student Attendance") },
+                title = { Text("Student Dashboard") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
         }
     ) { paddingValues ->
-        OutlinedTextField(
-            value = pin,
-            onValueChange = { if (it.length <= 6 && it.all { char -> char.isDigit() }) pin = it },
-            label = { Text("Enter Attendance PIN") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -155,28 +154,16 @@ fun StudentScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Mark Your Attendance",
+                text = "Student Dashboard",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
 
-
             Button(
-                onClick = {
-                    submitAttendance(
-                        pin = pin,
-                        databaseHelper = databaseHelper,
-                        locationHelper = locationHelper,
-                        onStatusUpdate = { message, loading ->
-                            statusMessage = message
-                            isLoading = loading
-                        }
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = pin.length >= 4 && !isLoading
+                onClick = onNavigateToTimetable,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Submit Attendance")
+                Text("Mark Attendance")
             }
 
             if (statusMessage.isNotEmpty()) {
@@ -247,62 +234,6 @@ fun CourseItem(course: Map<String, Any>) {
                 text = "Section: ${course["section"]?.toString() ?: "N/A"}",
                 fontSize = 14.sp
             )
-        }
-    }
-}
-
-private fun submitAttendance(
-    pin: String,
-    databaseHelper: DatabaseHelper,
-    locationHelper: LocationHelper,
-    onStatusUpdate: (String, Boolean) -> Unit
-) {
-    // Validate PIN format
-    if (pin.isEmpty() || pin.length < 4) {
-        onStatusUpdate("Error: Please enter a valid PIN", false)
-        return
-    }
-
-    onStatusUpdate("Verifying attendance...", true)
-
-    // Step 1: Verify the PIN
-    databaseHelper.verifyPin(pin) { isValid, sessionId ->
-        if (!isValid || sessionId == null) {
-            onStatusUpdate("Error: Invalid or expired PIN", false)
-            return@verifyPin
-        }
-
-        // Step 2: Get current location
-        locationHelper.getCurrentLocation { location ->
-            if (location == null) {
-                onStatusUpdate("Error: Unable to get your location", false)
-                return@getCurrentLocation
-            }
-
-            // Step 3: Mark attendance in database
-            val userId = databaseHelper.getCurrentUserId()
-            if (userId == null) {
-                onStatusUpdate("Error: You are not logged in", false)
-                return@getCurrentLocation
-            }
-
-            val locationMap = mapOf(
-                "latitude" to location.latitude,
-                "longitude" to location.longitude
-            )
-
-            databaseHelper.markAttendance(
-                studentId = userId,
-                courseId = "course_id", // This would be set based on the session
-                sessionId = sessionId,
-                location = locationMap
-            ) { success ->
-                if (success) {
-                    onStatusUpdate("Success! Your attendance has been recorded", false)
-                } else {
-                    onStatusUpdate("Error: Failed to record attendance", false)
-                }
-            }
         }
     }
 }

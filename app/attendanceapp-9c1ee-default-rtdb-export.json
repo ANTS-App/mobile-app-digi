@@ -1,0 +1,120 @@
+{
+  "attendanceRecords": {
+    "C101": {
+      "20250315": {
+        "S001": true,
+        "S002": false
+      }
+    },
+    "C102": {
+      "20250315": {
+        "S001": true
+      }
+    }
+  },
+  "attendanceSessions": {
+    "AS001": {
+      "attendees": {
+        "S001": {
+          "isCorrect": true,
+          "selectedCode": "X123",
+          "timestamp": "10:05 AM"
+        },
+        "S002": {
+          "isCorrect": false,
+          "selectedCode": "B222",
+          "timestamp": "10:10 AM"
+        }
+      },
+      "classId": "C101",
+      "correctCode": "X123",
+      "date": "2025-03-15",
+      "decoyOptions": [
+        "A111",
+        "B222",
+        "C333",
+        "D444",
+        "X123"
+      ],
+      "endTime": "11:30 AM",
+      "isActive": false,
+      "startTime": "10:00 AM"
+    }
+  },
+  "attendance_sessions": {
+    "20250315161211": {
+      "class_name": "AI",
+      "day": "Wednesday",
+      "duration": 1,
+      "other_numbers": [
+        2507,
+        9827,
+        5448,
+        7222,
+        2800
+      ],
+      "status": "completed",
+      "teacher_number": 1497,
+      "time_slot": "9am-10am",
+      "timestamp": "20250315161211"
+    }
+  },
+  "classes": {
+    "C101": {
+      "enrolledStudents": [
+        "S001",
+        "S002"
+      ],
+      "name": "Mathematics 101",
+      "schedule": {
+        "day": "Monday",
+        "room": "Room 12A",
+        "time": "10:00 AM - 11:30 AM"
+      },
+      "teacherId": "T001"
+    },
+    "C102": {
+      "enrolledStudents": [
+        "S001"
+      ],
+      "name": "Physics 101",
+      "schedule": {
+        "day": "Wednesday",
+        "room": "Room 15B",
+        "time": "2:00 PM - 3:30 PM"
+      },
+      "teacherId": "T001"
+    }
+  },
+  "users": {
+    "students": {
+      "S001": {
+        "classes": [
+          "C101",
+          "C102"
+        ],
+        "email": "alicesmith@example.com",
+        "name": "Alice Smith",
+        "studentId": "S001"
+      },
+      "S002": {
+        "classes": [
+          "C101"
+        ],
+        "email": "bobjohnson@example.com",
+        "name": "Bob Johnson",
+        "studentId": "S002"
+      }
+    },
+    "teachers": {
+      "T001": {
+        "classes": [
+          "C101",
+          "C102"
+        ],
+        "email": "johndoe@example.com",
+        "name": "John Doe"
+      }
+    }
+  }
+}
