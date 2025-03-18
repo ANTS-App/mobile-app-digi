@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AttendanceApp</string>
+    <string name="student_text1">Select the correct number:</string>
+    <string name="mark_attendance">Mark Attendance</string>
 </resources>
