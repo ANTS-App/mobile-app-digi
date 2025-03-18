@@ -64,6 +64,10 @@ dependencies {
     // Play Services Location
     implementation(libs.play.services.location.v2101)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
 
     // Testing
     testImplementation(libs.junit)
