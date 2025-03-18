@@ -43,7 +43,7 @@ public class StudentView extends AppCompatActivity {
 // Initialize TextViews
         StatusBarUtils.customizeStatusBar(this, R.color.white, true);
 
-        o1 = findViewById(R.id.t0);
+        o5 = findViewById(R.id.t0);
         o1 = findViewById(R.id.t1);
         o2 = findViewById(R.id.t2);
         o3 = findViewById(R.id.t3);
@@ -76,14 +76,14 @@ public class StudentView extends AppCompatActivity {
             }
         });
         // Retrieve teacher_number from Firebase
-        databaseReference.child("teacher_number").addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    long teacherNumber = snapshot.getValue(Long.class);
-                    o1.setText(String.valueOf(teacherNumber)); // Display teacher_number
+                    long teacherNumber = snapshot.child("teacher_number").getValue(Long.class);
+                    o5.setText(String.valueOf(teacherNumber)); // Display teacher_number
                 } else {
-                    o1.setText("N/A"); // Handle missing data
+                    o5.setText("N/A"); // Handle missing data
                 }
             }
             @Override
