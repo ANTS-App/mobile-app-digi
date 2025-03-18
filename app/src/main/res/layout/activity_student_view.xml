@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:gravity="center"
+    android:padding="10dp"
+    tools:context=".StudentView">
+
+    <LinearLayout
+        android:id="@+id/studentv_ll1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:textSize="25sp"
+                android:text="loading.."/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="18sp"
+                android:text="loading.."/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_below="@+id/studentv_ll1"
+        android:padding="20dp">
+        <TextView
+            android:id="@+id/questionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/student_text1"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp" />
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:max="60"
+            android:progress="60"
+            app:indicatorColor="@color/lightBlue"
+            app:trackColor="@android:color/darker_gray"
+            app:trackThickness="8dp"
+            android:layout_marginBottom="20dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginBottom="20dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/option0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                android:background="@drawable/rounded_boarder"
+                app:strokeColor="@android:color/darker_gray"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:id="@+id/t0"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="1234"
+                    android:textSize="18sp"
+                    android:padding="16dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/option1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                android:background="@drawable/rounded_boarder"
+                app:strokeColor="@android:color/darker_gray"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:id="@+id/t1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="1234"
+                    android:textSize="18sp"
+                    android:padding="16dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/option2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                android:background="@drawable/rounded_boarder"
+                app:strokeColor="@android:color/darker_gray"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:id="@+id/t2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="5678"
+                    android:textSize="18sp"
+                    android:padding="16dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/option3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                android:background="@drawable/rounded_boarder"
+                app:strokeColor="@android:color/darker_gray"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:id="@+id/t3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="9101"
+                    android:textSize="18sp"
+                    android:padding="16dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/option4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                android:background="@drawable/rounded_boarder"
+                app:strokeColor="@android:color/darker_gray"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:id="@+id/t4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="1121"
+                    android:textSize="18sp"
+                    android:padding="16dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/markAttendanceButton"
+            android:layout_width="match_parent"
+            android:layout_height="62dp"
+            android:text="@string/mark_attendance"
+            style="@style/Widget.Material3.Button.ElevatedButton"
+            android:backgroundTint="@color/lightBlue"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="40dp"/>
+    </LinearLayout>
+</RelativeLayout>
