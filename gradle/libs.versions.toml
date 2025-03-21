@@ -1,6 +1,6 @@
 [versions]
 activityComposeVersion = "1.8.0"
-agp = "8.7.3"
+agp = "8.4.0"
 androidxJunit = "1.1.5"
 clockview = "1.0.3"
 clockviewVersion = "1.0"
@@ -32,6 +32,9 @@ coroutines = "1.7.3"
 workManager = "2.9.0"
 bluetoothLe = "1.1.0"
 firebaseMessaging = "23.3.0"
+appcompat = "1.6.1"                 # Added missing appcompat version
+material = "1.11.0"                  # Added missing material version
+constraintlayout = "2.1.4"            # Added missing constraintlayout version
 
 [libraries]
 androidx-activity-compose-v180 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
@@ -80,6 +83,11 @@ ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.re
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "uiTooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+
+# Added missing dependencies
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
