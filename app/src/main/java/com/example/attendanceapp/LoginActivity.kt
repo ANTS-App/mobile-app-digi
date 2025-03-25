@@ -46,7 +46,7 @@ class LoginActivity : ComponentActivity() {
         auth = FirebaseAuth.getInstance()
         databaseHelper = DatabaseHelper()
 
-        // Check if user is already logged in
+//         Check if user is already logged in
         if (auth.currentUser != null) {
             navigateToAppropriateScreen()
             return
@@ -84,7 +84,7 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun navigateToAppropriateScreen() {
-        val intent = Intent(this, StudentActivity::class.java)
+        val intent = Intent(this, StudentView::class.java)
         startActivity(intent)
         finish()
     }
