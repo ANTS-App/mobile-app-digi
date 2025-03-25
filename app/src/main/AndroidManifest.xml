@@ -23,6 +23,8 @@
         <activity android:name=".HomeActivity" />
         <activity android:name=".LoginActivity"/>
         <activity android:name=".StudentActivity"/>
+        <activity android:name=".TimetableSelectionActivity"/>
+        <activity android:name=".AttendanceActivity"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -33,4 +35,4 @@
             </intent-filter>
         </activity>
     </application>
-</manifest>
+</manifest> 

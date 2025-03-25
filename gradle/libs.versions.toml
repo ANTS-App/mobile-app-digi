@@ -34,7 +34,8 @@ bluetoothLe = "1.1.0"
 firebaseMessaging = "23.3.0"
 appcompat = "1.6.1"                 # Added missing appcompat version
 material = "1.11.0"                  # Added missing material version
-constraintlayout = "2.1.4"            # Added missing constraintlayout version
+constraintlayout = "2.1.4"
+navigationCompose = "2.8.9"            # Added missing constraintlayout version
 
 [libraries]
 androidx-activity-compose-v180 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
@@ -88,6 +89,7 @@ firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-fires
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

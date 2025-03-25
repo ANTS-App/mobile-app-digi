@@ -15,12 +15,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.attendanceapp.models.Timetable
 import com.example.attendanceapp.ui.theme.AttendanceAppTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class TimetableSelectionActivity : ComponentActivity() {
+    private lateinit var auth: FirebaseAuth
     private lateinit var databaseHelper: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        auth = FirebaseAuth.getInstance()
         databaseHelper = DatabaseHelper()
 
         setContent {
@@ -53,12 +56,22 @@ fun TimetableSelectionScreen(
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        databaseHelper.getCurrentUserId()?.let { _ ->
-            // Assuming DatabaseHelper internally uses the current user ID
+        val currentUserId = databaseHelper.getCurrentUserId()
+        if (currentUserId != null) {
             databaseHelper.getStudentTimetable { fetchedTimetable ->
-                timetable = fetchedTimetable
-                isLoading = false
+                if (fetchedTimetable.isNotEmpty()) {
+                    timetable = fetchedTimetable
+                    isLoading = false
+                } else {
+                    // Handle empty timetable case
+                    println("No timetable data found")
+                    isLoading = false
+                }
             }
+        } else {
+            // Handle case where no user is logged in
+            println("No user ID found")
+            isLoading = false
         }
     }
 

@@ -79,6 +79,7 @@ dependencies {
     //implementation(libs.androidx.activity)
     implementation("androidx.activity:activity:1.8.0")
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.navigation.compose)
 
     // Testing
     testImplementation(libs.junit)
