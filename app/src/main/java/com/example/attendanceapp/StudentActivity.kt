@@ -1,6 +1,7 @@
 package com.example.attendanceapp
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -9,8 +10,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,11 +19,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+
 import com.example.attendanceapp.ui.theme.AttendanceAppTheme
 
 class StudentActivity : ComponentActivity() {
     private lateinit var databaseHelper: DatabaseHelper
-    private lateinit var locationHelper: LocationHelper
+    private lateinit var geolocationHelper: GeolocationHelper
     private lateinit var bluetoothHelper: BluetoothHelper
 
     private val requestPermissionsLauncher = registerForActivityResult(
@@ -41,12 +41,10 @@ class StudentActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize helpers
         databaseHelper = DatabaseHelper()
-        locationHelper = LocationHelper(this)
+        geolocationHelper = GeolocationHelper(this)
         bluetoothHelper = BluetoothHelper(this)
 
-        // Request necessary permissions
         requestPermissions()
 
         setContent {
@@ -57,24 +55,41 @@ class StudentActivity : ComponentActivity() {
                 ) {
                     StudentScreen(
                         databaseHelper = databaseHelper,
-                        locationHelper = locationHelper,
+                        geolocationHelper = geolocationHelper,
                         bluetoothHelper = bluetoothHelper,
                         onRequestPermissions = { requestPermissions() },
-                        onNavigateToTimetable = { navigateToTimetableSelection() }
+                        onNavigateToTimetable = { checkConditionsBeforeAttendance() }
                     )
                 }
             }
         }
     }
 
-    private fun navigateToTimetableSelection() {
-        startActivity(Intent(this, TimetableSelectionActivity::class.java))
+    private fun checkConditionsBeforeAttendance() {
+        if (!bluetoothHelper.isBluetoothEnabled()) {
+            Toast.makeText(this, "Please enable Bluetooth to mark attendance.", Toast.LENGTH_LONG).show()
+            startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+            return
+        }
+
+        bluetoothHelper.scanForTeacherBluetooth { isInRange ->
+            if (isInRange) {
+                geolocationHelper.verifyAttendance("3") { isWithinRange ->
+                    if (isWithinRange) {
+                        startActivity(Intent(this, TimetableSelectionActivity::class.java))
+                    } else {
+                        Toast.makeText(this, "You are not within 10 meters of the teacher.", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Teacher not in Bluetooth range. Cannot mark attendance.", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun requestPermissions() {
         val permissionsToRequest = mutableListOf<String>()
 
-        // Add location permissions
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -83,7 +98,6 @@ class StudentActivity : ComponentActivity() {
             permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
-        // Add Bluetooth permissions
         permissionsToRequest.addAll(
             BluetoothHelper.getRequiredPermissions().filter {
                 ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
@@ -97,8 +111,7 @@ class StudentActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        bluetoothHelper.cleanup()
-        locationHelper.stopLocationUpdates()
+        geolocationHelper.stopLocationUpdates()
     }
 }
 
@@ -106,32 +119,21 @@ class StudentActivity : ComponentActivity() {
 @Composable
 fun StudentScreen(
     databaseHelper: DatabaseHelper,
-    locationHelper: LocationHelper,
+    geolocationHelper: GeolocationHelper,
     bluetoothHelper: BluetoothHelper,
     onRequestPermissions: () -> Unit,
     onNavigateToTimetable: () -> Unit
 ) {
     var statusMessage by remember { mutableStateOf("") }
-    val isLoading by remember { mutableStateOf(false) }
-    var courses by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var bluetoothEnabled by remember { mutableStateOf(bluetoothHelper.isBluetoothEnabled()) }
 
     LaunchedEffect(Unit) {
-        // Check for permissions
-        if (!locationHelper.hasLocationPermission() || !bluetoothHelper.hasBluetoothPermissions()) {
+        if (!geolocationHelper.hasLocationPermission() || !bluetoothHelper.hasBluetoothPermissions()) {
             onRequestPermissions()
         }
 
-        // Check if Bluetooth is enabled
         if (!bluetoothHelper.isBluetoothEnabled()) {
             statusMessage = "Bluetooth is not enabled. Please enable it to continue."
-        }
-
-        // Load student courses if user is logged in
-        databaseHelper.getCurrentUserId()?.let { _ ->
-            // Assuming DatabaseHelper internally uses the current user ID
-            databaseHelper.getStudentCourses { loadedCourses ->
-                courses = loadedCourses
-            }
         }
     }
 
@@ -161,7 +163,8 @@ fun StudentScreen(
 
             Button(
                 onClick = onNavigateToTimetable,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = bluetoothEnabled
             ) {
                 Text("Mark Attendance")
             }
@@ -169,71 +172,10 @@ fun StudentScreen(
             if (statusMessage.isNotEmpty()) {
                 Text(
                     text = statusMessage,
-                    color = when {
-                        statusMessage.contains("Success") -> Color.Green
-                        statusMessage.contains("Error") -> Color.Red
-                        else -> Color.Gray
-                    },
+                    color = Color.Red,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
-
-            if (isLoading) {
-                CircularProgressIndicator()
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Your Courses",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            if (courses.isEmpty()) {
-                Text(
-                    text = "No courses found. Please contact your administrator.",
-                    color = Color.Gray
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(courses) { course ->
-                        CourseItem(course)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CourseItem(course: Map<String, Any>) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = course["name"]?.toString() ?: "Unknown Course",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Instructor: ${course["instructorName"]?.toString() ?: "Unknown"}",
-                fontSize = 14.sp
-            )
-            Text(
-                text = "Section: ${course["section"]?.toString() ?: "N/A"}",
-                fontSize = 14.sp
-            )
         }
     }
 }

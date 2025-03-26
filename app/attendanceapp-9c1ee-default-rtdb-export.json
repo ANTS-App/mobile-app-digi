@@ -1,0 +1,143 @@
+{
+  "attendance_sessions": {
+    "2025032523": {
+      "attn_marked": {
+        "S12345": "marked"
+      }
+    },
+    "20250317173817": {
+      "attn_marked": {
+        "S12345": "marked"
+      },
+      "class_name": "UHV",
+      "day": "Wednesday",
+      "duration": 1,
+      "other_numbers": [
+        9392,
+        9630,
+        1298,
+        4070,
+        2364
+      ],
+      "status": "completed",
+      "teacher_number": 6219,
+      "time_slot": "10am-11am",
+      "timestamp": "20250317173817"
+    },
+    "202503211314": {
+      "class_name": "ML",
+      "day": "Thursday",
+      "duration": 1,
+      "other_numbers": [
+        8086,
+        3445,
+        7448,
+        3503,
+        2259
+      ],
+      "status": "completed",
+      "teacher_number": 3406,
+      "time_slot": "11am-12pm",
+      "timestamp": "202503211314"
+    },
+    "202503240710": {
+      "attn_marked": {
+        "S12345": "marked"
+      },
+      "class_name": "ML",
+      "day": "Thursday",
+      "duration": 1,
+      "other_numbers": [
+        1888,
+        6510,
+        7884,
+        4081,
+        8227
+      ],
+      "status": "completed",
+      "teacher_number": 6942,
+      "time_slot": "11am-12pm",
+      "timestamp": "202503240710"
+    },
+    "202503240717": {
+      "class_name": "CC|SPM",
+      "day": "Saturday",
+      "duration": 1,
+      "other_numbers": [
+        5091,
+        4541,
+        5920,
+        7210,
+        5547
+      ],
+      "status": "completed",
+      "teacher_number": 3902,
+      "time_slot": "10am-11am",
+      "timestamp": "202503240717"
+    },
+    "202503260123": {
+      "class_name": "UHV",
+      "day": "Tuesday",
+      "duration": 1,
+      "other_numbers": [
+        6538,
+        6989,
+        7856,
+        6021,
+        8467
+      ],
+      "status": "completed",
+      "teacher_number": 4903,
+      "time_slot": "9am-10am",
+      "timestamp": "202503260123"
+    }
+  },
+  "classes": {
+    "class1": {
+      "name": "\"AI\"",
+      "schedule": {
+        "day": "Monday",
+        "room": "\"E205\"",
+        "time": "\"10:00 AM\""
+      },
+      "teacherID": 3
+    }
+  },
+  "students": {
+    "S12345": {
+      "courses": {
+        "CS101": true,
+        "MATH201": true
+      },
+      "email": "student1@example.com",
+      "name": "Student One"
+    }
+  },
+  "users": {
+    "Students": {
+      "S12345": {
+        "classes": [
+          "class 1",
+          "class 2"
+        ],
+        "email": "t12@gmail.com"
+      },
+      "S12346": {
+        "classes": [
+          "class 1"
+        ],
+        "email": "student3@example.com"
+      }
+    },
+    "teachers": {
+      "3": {
+        "name": "\"Ambiguous Sharma\""
+      }
+    },
+    "user1": {
+      "email": "student1@example.com",
+      "name": "Student One",
+      "role": "student"
+    }
+  }
+}
