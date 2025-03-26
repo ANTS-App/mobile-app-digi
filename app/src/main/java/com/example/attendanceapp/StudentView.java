@@ -193,6 +193,13 @@ public class StudentView extends AppCompatActivity {
         progressBar.setProgress(0);
     }
 
+
+//    val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
+//    pairedDevices?.forEach { device ->
+//            val deviceName = device.name
+//        val deviceHardwareAddress = device.address // MAC address
+//    }
+
     private void displayCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault());
         String currentDate = sdf.format(Calendar.getInstance().getTime());
