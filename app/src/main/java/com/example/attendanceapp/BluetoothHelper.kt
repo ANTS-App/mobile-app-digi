@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.database.*
 
@@ -37,6 +38,11 @@ class BluetoothHelper(private val context: Context) {
         return getRequiredPermissions().all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
+    }
+
+    fun requestBluetoothPermissions(activity: android.app.Activity, requestCode: Int) {
+        val permissions = getRequiredPermissions()
+        ActivityCompat.requestPermissions(activity, permissions.toTypedArray(), requestCode)
     }
 
     fun isBluetoothEnabled(): Boolean {
