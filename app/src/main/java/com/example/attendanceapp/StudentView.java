@@ -266,6 +266,9 @@ public class StudentView extends AppCompatActivity {
     private long selectedCode = -1; // Default unselected
     private String teacherId = "3"; // Teacher ID for geolocation verification
 
+    private static final int BLUETOOTH_PERMISSION_REQUEST_CODE = 100;
+    private BluetoothHelper bluetoothHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -286,6 +289,15 @@ public class StudentView extends AppCompatActivity {
         setupClickListeners();
 
         requestPermissions();
+
+
+        bluetoothHelper = new BluetoothHelper(this);
+
+        if (bluetoothHelper.hasBluetoothPermissions()) {
+            startBluetoothScan();
+        } else {
+            bluetoothHelper.requestBluetoothPermissions(this, BLUETOOTH_PERMISSION_REQUEST_CODE);
+        }
 
         // Location permission will be requested only when needed
         Log.d(TAG, "onCreate: Activity setup complete");
@@ -330,10 +342,14 @@ public class StudentView extends AppCompatActivity {
                     List<Long> otherNumbers = (List<Long>) snapshot.child("other_numbers").getValue();
                     if (otherNumbers != null) {
                         Log.d(TAG, "onDataChange: Found " + otherNumbers.size() + " other numbers");
-                        if (otherNumbers.size() > 0) o1.setText(String.valueOf(otherNumbers.get(0)));
-                        if (otherNumbers.size() > 1) o2.setText(String.valueOf(otherNumbers.get(1)));
-                        if (otherNumbers.size() > 2) o3.setText(String.valueOf(otherNumbers.get(2)));
-                        if (otherNumbers.size() > 3) o4.setText(String.valueOf(otherNumbers.get(3)));
+                        if (otherNumbers.size() > 0)
+                            o1.setText(String.valueOf(otherNumbers.get(0)));
+                        if (otherNumbers.size() > 1)
+                            o2.setText(String.valueOf(otherNumbers.get(1)));
+                        if (otherNumbers.size() > 2)
+                            o3.setText(String.valueOf(otherNumbers.get(2)));
+                        if (otherNumbers.size() > 3)
+                            o4.setText(String.valueOf(otherNumbers.get(3)));
                     } else {
                         Log.w(TAG, "onDataChange: Other numbers list is null");
                     }
@@ -477,6 +493,14 @@ public class StudentView extends AppCompatActivity {
 
                 myButton.setText("Location Permission Required");
                 myButton.setEnabled(true); // Keep enabled so they can try again
+            }
+        }
+
+        if (requestCode == BLUETOOTH_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && allPermissionsGranted(grantResults)) {
+                startBluetoothScan();
+            } else {
+                Toast.makeText(this, "Bluetooth permissions are required.", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -644,7 +668,7 @@ public class StudentView extends AppCompatActivity {
                                 fineLocationGranted = result.getOrDefault(
                                         Manifest.permission.ACCESS_FINE_LOCATION, false);
                                 coarseLocationGranted = result.getOrDefault(
-                                        Manifest.permission.ACCESS_COARSE_LOCATION,false);
+                                        Manifest.permission.ACCESS_COARSE_LOCATION, false);
                             }
 
                             if (fineLocationGranted != null && fineLocationGranted) {
@@ -662,9 +686,29 @@ public class StudentView extends AppCompatActivity {
         // Before you perform the actual permission request, check whether your app
         // already has the permissions, and whether your app needs to show a permission
         // rationale dialog. For more details, see Request permissions.
-        locationPermissionRequest.launch(new String[] {
+        locationPermissionRequest.launch(new String[]{
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION
+        });
+    }
+
+    private boolean allPermissionsGranted(int[] grantResults) {
+        for (int result : grantResults) {
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void startBluetoothScan() {
+        bluetoothHelper.scanForTeacherBluetooth(isTeacherInRange -> {
+            if (isTeacherInRange) {
+                Toast.makeText(StudentView.this, "Teacher's device found!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(StudentView.this, "Teacher's device not found.", Toast.LENGTH_SHORT).show();
+            }
+            return null;
         });
     }
 }
