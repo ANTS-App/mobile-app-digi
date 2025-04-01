@@ -56,7 +56,7 @@ class GeolocationHelper(private val context: Context) {
         }
 
         Log.d(TAG, "Fetching teacher location from Firebase")
-        database.child(teacherId).child("tid1").get().addOnSuccessListener { snapshot ->
+        database.child("tid2").get().addOnSuccessListener { snapshot ->
             Log.d(TAG, "Firebase snapshot exists: ${snapshot.exists()}")
 
             val teacherLatitude = snapshot.child("latitude").getValue(Double::class.java)
