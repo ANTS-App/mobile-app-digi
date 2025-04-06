@@ -282,21 +282,24 @@ public class StudentView extends AppCompatActivity {
         StatusBarUtils.customizeStatusBar(this, R.color.white, true);
         Log.d(TAG, "onCreate: Status bar customized");
 
-        initializeViews();
-        displayCurrentDate();
-        startProgress();
-        setupFirebaseListeners();
-        setupClickListeners();
-
         requestPermissions();
-
 
         bluetoothHelper = new BluetoothHelper(this);
 
         if (bluetoothHelper.hasBluetoothPermissions()) {
+            initializeViews();
+            displayCurrentDate();
+            setupFirebaseListeners();
             startBluetoothScan();
+            startProgress();
+            setupClickListeners();
+
         } else {
             bluetoothHelper.requestBluetoothPermissions(this, BLUETOOTH_PERMISSION_REQUEST_CODE);
+            initializeViews();
+            displayCurrentDate();
+            setupFirebaseListeners();
+            noBluetoothClickListeners();
         }
 
         // Location permission will be requested only when needed
@@ -328,7 +331,7 @@ public class StudentView extends AppCompatActivity {
 
         String childName = getDynamicChildName(); // Get dynamic child name
         databaseReference = FirebaseDatabase.getInstance().getReference("attendance_sessions").child("202503240717");
-        databaseReference1 = FirebaseDatabase.getInstance().getReference("students").child(uid);
+        databaseReference1 = FirebaseDatabase.getInstance().getReference("users").child("Students").child(uid);
 
         Log.d(TAG, "setupFirebaseListeners: Firebase references initialized");
 
@@ -376,7 +379,7 @@ public class StudentView extends AppCompatActivity {
                     o5.setText(String.valueOf(teacherNumber));
                 } else {
                     Log.w(TAG, "onDataChange: No data found for teacher number");
-                    o5.setText("N/A");
+                    o5.setText("Loading..");
                 }
             }
 
@@ -426,6 +429,15 @@ public class StudentView extends AppCompatActivity {
 
         Log.d(TAG, "setupClickListeners: All click listeners set up");
     }
+
+    private void noBluetoothClickListeners() {
+        // Set click listener for attendance button
+        myButton.setOnClickListener(view -> {
+            Toast.makeText(this, "Please enable the bluetooth permission!", Toast.LENGTH_SHORT).show();
+       });
+
+    }
+
 
     private void handleAttendanceButtonClick() {
         Log.d(TAG, "handleAttendanceButtonClick: Starting verification process");
@@ -544,7 +556,14 @@ public class StudentView extends AppCompatActivity {
             Log.d(TAG, "Number selected: " + textView.getText());
             resetSelection(); // Unselect previous selection
             textView.setBackgroundColor(getColor(R.color.lightGreen)); // Highlight selected
-            selectedCode = Long.parseLong(textView.getText().toString()); // Store selected code
+            try {
+                selectedCode = Long.parseLong(textView.getText().toString());
+            } catch (NumberFormatException e) {
+                Log.e(TAG, "Invalid number format for selected code: " + textView.getText(), e);
+                Toast.makeText(this, "Invalid code selected. Please wait for it to load.", Toast.LENGTH_SHORT).show();
+                selectedCode = -1; // Reset selection
+                resetSelection();  // Remove highlight if invalid
+            }
         });
     }
 
