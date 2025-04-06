@@ -42,9 +42,9 @@ android {
 
 dependencies {
     // Added code to help clone and run repository
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation(libs.androidx.appcompat.v170)
+    implementation(libs.material.v1120)
+    implementation(libs.androidx.constraintlayout.v221)
 
     // Core AndroidX and Compose
     implementation(libs.androidx.core.ktx)
