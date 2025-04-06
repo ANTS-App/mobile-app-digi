@@ -212,6 +212,9 @@ package com.example.attendanceapp;
 import static com.example.attendanceapp.utilities.ChildNameGenerator.getDynamicChildName;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
@@ -250,6 +253,7 @@ import kotlin.jvm.functions.Function1;
 public class StudentView extends AppCompatActivity {
     private static final String TAG = "StudentView";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 100;
+    private static final int REQUEST_ENABLE_BT = 0000;
 
     TextView o1, o2, o3, o4, o5, timeTV, nameTV, dateTV;
     private DatabaseReference databaseReference, databaseReference1;
@@ -282,11 +286,22 @@ public class StudentView extends AppCompatActivity {
         StatusBarUtils.customizeStatusBar(this, R.color.white, true);
         Log.d(TAG, "onCreate: Status bar customized");
 
+        BluetoothManager bluetoothManager = getSystemService(BluetoothManager.class);
+        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+        if (bluetoothAdapter == null) {
+            // Device doesn't support Bluetooth
+        }
+
         requestPermissions();
 
         bluetoothHelper = new BluetoothHelper(this);
 
         if (bluetoothHelper.hasBluetoothPermissions()) {
+
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
             initializeViews();
             displayCurrentDate();
             setupFirebaseListeners();
