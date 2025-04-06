@@ -57,18 +57,24 @@ public class BluetoothHelper {
     private void fetchTeacherMacAddress() {
         // Assume the teacher's MAC address is stored at "attendance_sessions/{session_id}/teacher_mac_address"
         // Change the path as per your Firebase database structure.
-        DatabaseReference ref = FirebaseDatabase.getInstance()
-                .getReference("attendance_sessions")
-                .child("202504061056");
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("attendance_sessions");
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                if(snapshot.exists()){
-                    String mac = snapshot.child("teacher_mac_address").getValue(String.class);
-                    teacherMacAddress = mac;
-                    Log.d(TAG, "Fetched teacher MAC address: " + teacherMacAddress);
+                if (snapshot.exists()) {
+                    // Loop through each session (timestamp nodes)
+                    for (DataSnapshot sessionSnapshot : snapshot.getChildren()) {
+                        String status = sessionSnapshot.child("status").getValue(String.class);
+                        if ("active".equals(status)) {
+                            String mac = sessionSnapshot.child("bluetoothSignature").getValue(String.class);
+                            teacherMacAddress = mac;
+                            Log.d(TAG, "Fetched teacher MAC address from active session: " + teacherMacAddress);
+                            // Only one active session is expected; exit the loop
+                            break;
+                        }
+                    }
                 } else {
-                    Log.w(TAG, "No teacher MAC address found in Firebase");
+                    Log.w(TAG, "No sessions found in attendance_sessions");
                 }
             }
 
@@ -77,6 +83,7 @@ public class BluetoothHelper {
                 Log.e(TAG, "Error fetching teacher MAC address: " + error.getMessage());
             }
         });
+
     }
 
     // Check if the app has the necessary Bluetooth permissions.
