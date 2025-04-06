@@ -112,7 +112,7 @@ class LoginActivity : ComponentActivity() {
         }
 
     private fun navigateToAppropriateScreen() {
-        startActivity(Intent(this, StudentView::class.java))
+        startActivity(Intent(this, WaitingActivity::class.java))
         finish()
     }
 }

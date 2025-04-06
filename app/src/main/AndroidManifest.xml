@@ -4,7 +4,6 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
@@ -21,9 +20,10 @@
         android:theme="@style/Theme.AttendanceApp"
         tools:targetApi="31">
 
-        <activity android:name=".HomeActivity" />
-        <activity android:name=".MainActivity" />
+<!--        <activity android:name=".HomeActivity" />-->
+<!--        <activity android:name=".MainActivity" />-->
         <activity android:name=".StudentView" />
+        <activity android:name=".WaitingActivity" />
         <activity android:name=".TimetableSelectionActivity" />
         <activity android:name=".AttendanceActivity" />
         <activity android:name=".LoginActivity"/>
