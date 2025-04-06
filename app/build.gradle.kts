@@ -77,9 +77,11 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     //implementation(libs.androidx.activity)
-    implementation("androidx.activity:activity:1.8.0")
+    implementation(libs.androidx.activity.v180)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.play.services.auth)
+
 
     // Testing
     testImplementation(libs.junit)
