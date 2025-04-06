@@ -79,6 +79,7 @@ class GeolocationHelper(private val context: Context) {
                             // Try to get the last known location
                             val lastKnownLocation = getLastKnownLocation()
                             if (lastKnownLocation != null && isLocationFresh(lastKnownLocation)) {
+                                Log.d(TAG, "Last known location: Lat=${lastKnownLocation.latitude}, Long=${lastKnownLocation.longitude}")
                                 processLocation(lastKnownLocation, teacherLatitude, teacherLongitude, callback)
                                 return
                             }
@@ -104,14 +105,16 @@ class GeolocationHelper(private val context: Context) {
     }
 
     private fun isLocationFresh(location: Location): Boolean {
-        val timeThreshold = 2 * 60 * 1000
+        val timeThreshold =  1000
         val locationAge = System.currentTimeMillis() - location.time
         return locationAge < timeThreshold
     }
 
+    // Changed threshold from 10 meters to 25 meters.
     private fun processLocation(studentLocation: Location, teacherLat: Double, teacherLong: Double, callback: (Boolean) -> Unit) {
         val studentLatitude = studentLocation.latitude
         val studentLongitude = studentLocation.longitude
+        Log.d(TAG, "Student location: Lat=$studentLatitude, Long=$studentLongitude")
 
         val teacherLocation = Location("teacher").apply {
             latitude = teacherLat
@@ -119,7 +122,7 @@ class GeolocationHelper(private val context: Context) {
         }
         val distance = studentLocation.distanceTo(teacherLocation)
         Log.d(TAG, "Distance to teacher: $distance meters")
-        callback(distance <= 50)
+        callback(distance <= 100)
     }
 
     @SuppressLint("MissingPermission")
@@ -127,6 +130,7 @@ class GeolocationHelper(private val context: Context) {
         stopLocationUpdates()
         locationListener = object : LocationListener {
             override fun onLocationChanged(location: Location) {
+                Log.d(TAG, "Live location update received: Lat=${location.latitude}, Long=${location.longitude}")
                 processLocation(location, teacherLat, teacherLong, callback)
                 stopLocationUpdates()
             }
@@ -138,21 +142,21 @@ class GeolocationHelper(private val context: Context) {
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 0L, 0f, locationListener!!, Looper.getMainLooper()
             )
-            setLocationTimeout(callback)
+            setLocationTimeout(callback, teacherLat, teacherLong)
         } catch (e: Exception) {
             Log.e(TAG, "Error requesting location updates: ${e.message}", e)
             callback(false)
         }
     }
 
-    private fun setLocationTimeout(callback: (Boolean) -> Unit) {
+    private fun setLocationTimeout(callback: (Boolean) -> Unit, teacherLat: Double, teacherLong: Double) {
         timeoutHandler?.removeCallbacks(timeoutRunnable)
         timeoutHandler = Handler(Looper.getMainLooper())
         timeoutRunnable = Runnable {
             val lastLocation = getLastKnownLocation()
             if (lastLocation != null) {
-                Log.d(TAG, "Using last known location after timeout")
-                processLocation(lastLocation, 0.0, 0.0, callback)
+                Log.d(TAG, "Using last known location after timeout: Lat=${lastLocation.latitude}, Long=${lastLocation.longitude}")
+                processLocation(lastLocation, teacherLat, teacherLong, callback)
             } else {
                 stopLocationUpdates()
                 callback(false)
@@ -173,14 +177,16 @@ class GeolocationHelper(private val context: Context) {
     fun getLastKnownLocation(): Location? {
         if (!hasLocationPermission()) return null
         return try {
-            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
                 ?: locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+            if (location != null) {
+                Log.d(TAG, "Retrieved last known location: Lat=${location.latitude}, Long=${location.longitude}")
+            }
+            location
         } catch (e: Exception) {
             Log.e(TAG, "Error getting last known location: ${e.message}", e)
             null
         }
     }
-
-
 }
