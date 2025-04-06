@@ -94,4 +94,5 @@ dependencies {
     //implementation(libs.androidx.bluetooth)
     implementation(libs.androidx.work.manager)
     implementation(libs.firebase.messaging)
+    implementation(libs.paperdb)
 }
