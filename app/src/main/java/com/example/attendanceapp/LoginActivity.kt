@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.attendanceapp.Prevalent.Prevalent
 import com.example.attendanceapp.ui.theme.AttendanceAppTheme
 import com.example.attendanceapp.utilities.StatusBarUtils
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
@@ -24,6 +25,8 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.FirebaseDatabase
+import io.paperdb.Paper
 
 class LoginActivity : ComponentActivity() {
 
@@ -34,6 +37,8 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
+
+        Paper.init(this)
 
         StatusBarUtils.customizeStatusBar(this, R.color.white, true)
 
@@ -96,6 +101,50 @@ class LoginActivity : ComponentActivity() {
                     auth.signInWithCredential(firebaseCredential)
                         .addOnCompleteListener(this) { task ->
                             if (task.isSuccessful) {
+                                val user = auth.currentUser
+
+
+                                user?.email?.let { email ->
+                                    val rollNumber = email.substringBefore("@")
+                                    val uid = user.uid
+
+                                    Paper.book().write(Prevalent.UserUid, uid)
+                                    Paper.book().write(Prevalent.UserRoll, email)
+
+                                    val databaseRef  = FirebaseDatabase.getInstance()
+                                        .getReference("users")
+                                        .child("Students")
+                                        .child(rollNumber)
+
+                                    val databaseRef1  = FirebaseDatabase.getInstance()
+                                        .getReference("users")
+                                        .child("Students_uid")
+                                        .child(uid)
+
+                                    val studentData = mapOf(
+                                        "roll_number" to rollNumber,
+                                        "uid" to uid
+                                    )
+
+                                    databaseRef.setValue(studentData)
+                                        .addOnCompleteListener { dbTask ->
+                                            if (dbTask.isSuccessful) {
+                                                databaseRef1.setValue(studentData)
+                                                    .addOnCompleteListener{ dbTask ->
+                                                        if(dbTask.isSuccessful) {
+                                                            Log.d("FirebaseDB", "Student data saved successfully")
+
+                                                            Paper.book().write(Prevalent.UserUid, uid)
+                                                            Paper.book().write(Prevalent.UserRoll, email)
+                                                        } else {
+                                                            Log.e("FirebaseDB", "Failed to save student data", dbTask.exception)
+                                                        }
+                                                    }
+                                            } else {
+                                                Log.e("FirebaseDB", "Failed to save student data", dbTask.exception)
+                                            }
+                                        }
+                                }
                                 navigateToAppropriateScreen()
                             } else {
                                 Toast.makeText(this, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
