@@ -12,11 +12,12 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.google.firebase.database.*
+import kotlin.math.log
 
 class GeolocationHelper(private val context: Context) {
     private val TAG = "GeolocationHelper"
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-    private val database = FirebaseDatabase.getInstance().reference.child("users").child("teachers")
+    private val database = FirebaseDatabase.getInstance().reference.child("attendance_sessions")
     private var locationListener: LocationListener? = null
     private var timeoutHandler: Handler? = null
     private var timeoutRunnable: Runnable = Runnable { }
@@ -55,33 +56,51 @@ class GeolocationHelper(private val context: Context) {
             Log.w(TAG, "GPS is disabled, accuracy may be reduced")
         }
 
-        Log.d(TAG, "Fetching teacher location from Firebase")
-        database.child("tid2").get().addOnSuccessListener { snapshot ->
-            Log.d(TAG, "Firebase snapshot exists: ${snapshot.exists()}")
+        Log.d(TAG, "Fetching teacher location from active session in Firebase")
+        // Loop through all sessions under attendance_sessions to find the active one.
+        database.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    var activeFound = false
+                    for (sessionSnapshot in snapshot.children) {
+                        val status = sessionSnapshot.child("status").getValue(String::class.java)
+                        if (status != null && status == "active") {
+                            activeFound = true
+                            // Retrieve teacher location from the active session
+                            val teacherLatitude = sessionSnapshot.child("latitude").getValue(Double::class.java)
+                            val teacherLongitude = sessionSnapshot.child("longitude").getValue(Double::class.java)
+                            if (teacherLatitude == null || teacherLongitude == null) {
+                                Log.e(TAG, "Teacher location missing in active session")
+                                callback(false)
+                                return
+                            }
+                            Log.d(TAG, "Teacher location: Lat=$teacherLatitude, Long=$teacherLongitude")
 
-            val teacherLatitude = snapshot.child("latitude").getValue(Double::class.java)
-            val teacherLongitude = snapshot.child("longitude").getValue(Double::class.java)
+                            // Try to get the last known location
+                            val lastKnownLocation = getLastKnownLocation()
+                            if (lastKnownLocation != null && isLocationFresh(lastKnownLocation)) {
+                                processLocation(lastKnownLocation, teacherLatitude, teacherLongitude, callback)
+                                return
+                            }
+                            // If no fresh last known location, request live location updates.
+                            requestLiveLocation(teacherLatitude, teacherLongitude, callback)
+                            return
+                        }
+                    }
+                    if (!activeFound) {
+                        Log.e(TAG, "No active session found in Firebase")
+                        callback(false)
+                    }
+                } else {
+                    Log.e(TAG, "No attendance sessions found")
+                    callback(false)
+                }
+            }
 
-            if (teacherLatitude == null || teacherLongitude == null) {
-                Log.e(TAG, "Teacher location missing in Firebase")
+            override fun onCancelled(error: DatabaseError) {
                 callback(false)
-                return@addOnSuccessListener
             }
-
-            Log.d(TAG, "Teacher location: Lat=$teacherLatitude, Long=$teacherLongitude")
-
-            val lastKnownLocation = getLastKnownLocation()
-            if (lastKnownLocation != null && isLocationFresh(lastKnownLocation)) {
-                processLocation(lastKnownLocation, teacherLatitude, teacherLongitude, callback)
-                return@addOnSuccessListener
-            }
-
-            requestLiveLocation(teacherLatitude, teacherLongitude, callback)
-
-        }.addOnFailureListener { error ->
-            Log.e(TAG, "Firebase error: ${error.message}", error)
-            callback(false)
-        }
+        })
     }
 
     private fun isLocationFresh(location: Location): Boolean {
@@ -93,13 +112,14 @@ class GeolocationHelper(private val context: Context) {
     private fun processLocation(studentLocation: Location, teacherLat: Double, teacherLong: Double, callback: (Boolean) -> Unit) {
         val studentLatitude = studentLocation.latitude
         val studentLongitude = studentLocation.longitude
+
         val teacherLocation = Location("teacher").apply {
             latitude = teacherLat
             longitude = teacherLong
         }
         val distance = studentLocation.distanceTo(teacherLocation)
         Log.d(TAG, "Distance to teacher: $distance meters")
-        callback(distance <= 10)
+        callback(distance <= 50)
     }
 
     @SuppressLint("MissingPermission")
