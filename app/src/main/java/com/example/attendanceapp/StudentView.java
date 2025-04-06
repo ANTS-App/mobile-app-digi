@@ -330,7 +330,7 @@ public class StudentView extends AppCompatActivity {
         Log.d(TAG, "setupFirebaseListeners: Setting up Firebase database references");
 
         String childName = getDynamicChildName(); // Get dynamic child name
-        databaseReference = FirebaseDatabase.getInstance().getReference("attendance_sessions").child("202503240717");
+        databaseReference = FirebaseDatabase.getInstance().getReference("attendance_sessions").child("202504061056");
         databaseReference1 = FirebaseDatabase.getInstance().getReference("users").child("Students").child(uid);
 
         Log.d(TAG, "setupFirebaseListeners: Firebase references initialized");
