@@ -56,7 +56,7 @@ public class StudentView extends AppCompatActivity {
     private CountDownTimer countDownTimer;
     private GeolocationHelper geolocationHelper;
     private String activeSessionNode;
-    private String firebaseSSID; // Field for expected WiFi SSID from Firebase
+    private String firebaseSSID; // Expected WiFi SSID from Firebase
 
     private static final int TOTAL_TIME = 60000; // 60 seconds in milliseconds
     private static final int INTERVAL = 1000;    // Update every second
@@ -64,7 +64,7 @@ public class StudentView extends AppCompatActivity {
     private String uid, rollNo;
     private long teacherNumber;
     private long selectedCode = -1; // Default unselected
-    private String teacherId = "3"; // Teacher ID for verification (unused in WiFi version)
+    private String teacherId = "3"; // Teacher ID for location verification
 
     private static final int BLUETOOTH_PERMISSION_REQUEST_CODE = 100;
     private BluetoothHelper bluetoothHelper;
@@ -79,7 +79,7 @@ public class StudentView extends AppCompatActivity {
 
         Paper.init(this);
 
-        // Initialize GeolocationHelper (left intact though not used for verification now)
+        // Initialize GeolocationHelper (kept for location verification)
         geolocationHelper = new GeolocationHelper(this);
         Log.d(TAG, "onCreate: GeolocationHelper initialized");
 
@@ -193,8 +193,8 @@ public class StudentView extends AppCompatActivity {
 
         Log.d(TAG, "setupFirebaseListeners: Firebase references initialized");
 
-        // Retrieve other numbers and session details from Firebase
-        Log.d(TAG, "setupFirebaseListeners: Retrieving other numbers from Firebase");
+        // Retrieve session details from Firebase
+        Log.d(TAG, "setupFirebaseListeners: Retrieving session details from Firebase");
 
         DatabaseReference sessionRef = FirebaseDatabase.getInstance().getReference("attendance_sessions");
 
@@ -297,39 +297,121 @@ public class StudentView extends AppCompatActivity {
             return;
         }
 
-        // Use WiFi verification instead of connecting to WiFi
-        verifyWiFiAndMarkAttendance();
+        // Check if we have location permission before proceeding
+        if (!geolocationHelper.hasLocationPermission()) {
+            Log.i(TAG, "handleAttendanceButtonClick: No location permission, requesting it");
+            requestLocationPermission();
+        } else {
+            Log.d(TAG, "handleAttendanceButtonClick: Already have location permission, proceeding to verification");
+            verifyLocationAndMarkAttendance();
+        }
     }
 
-    private void verifyWiFiAndMarkAttendance() {
-        Log.d(TAG, "verifyWiFiAndMarkAttendance: Starting WiFi verification process");
-        myButton.setText("Verifying WiFi...");
+    private void requestLocationPermission() {
+        Log.d(TAG, "requestLocationPermission: Requesting location permission");
+
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            Log.d(TAG, "requestLocationPermission: Should show rationale before requesting");
+            Toast.makeText(this,
+                    "Location permission is required to verify you are near the teacher",
+                    Toast.LENGTH_LONG).show();
+        }
+
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                LOCATION_PERMISSION_REQUEST_CODE
+        );
+
+        Log.d(TAG, "requestLocationPermission: Permission request initiated");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        Log.d(TAG, "onRequestPermissionsResult: Received results for request code: " + requestCode);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "onRequestPermissionsResult: Location permission granted");
+                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+                verifyLocationAndMarkAttendance();
+            } else {
+                Log.e(TAG, "onRequestPermissionsResult: Location permission denied");
+                Toast.makeText(this,
+                        "Location permission denied. Cannot verify attendance location.",
+                        Toast.LENGTH_LONG).show();
+
+                myButton.setText("Location Permission Required");
+                myButton.setEnabled(true); // Keep enabled so they can try again
+            }
+        }
+
+        if (requestCode == BLUETOOTH_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && allPermissionsGranted(grantResults)) {
+                startBluetoothScan();
+            } else {
+                Toast.makeText(this, "Bluetooth permissions are required.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    // Modified: First verify location; if location is verified, then verify WiFi.
+    private void verifyLocationAndMarkAttendance() {
+        Log.d(TAG, "verifyLocationAndMarkAttendance: Starting location verification process");
+
+        myButton.setText("Verifying Location...");
         myButton.setEnabled(false);
 
-        wifiHelper.verifyAttendance(new Function1<Boolean, Unit>() {
+        // Call GeolocationHelper to verify proximity
+        geolocationHelper.verifyAttendance(teacherId, new Function1<Boolean, Unit>() {
             @Override
-            public Unit invoke(Boolean isSSIDFound) {
-                Log.d(TAG, "WiFi verification result: " + isSSIDFound);
+            public Unit invoke(Boolean isWithinRange) {
+                Log.d(TAG, "Location verification result: " + isWithinRange);
 
                 runOnUiThread(() -> {
-                    if (isSSIDFound) {
-                        Log.d(TAG, "WiFi verified, marking attendance");
-                        markAttendance();
+                    if (isWithinRange) {
+                        Log.d(TAG, "Location verified, now verifying WiFi");
+                        myButton.setText("Verifying WiFi...");
+                        // Now check WiFi using WiFiHelper
+                        wifiHelper.verifyAttendance(new Function1<Boolean, Unit>() {
+                            @Override
+                            public Unit invoke(Boolean isSSIDFound) {
+                                Log.d(TAG, "WiFi verification result: " + isSSIDFound);
+                                runOnUiThread(() -> {
+                                    if (isSSIDFound) {
+                                        Log.d(TAG, "WiFi verified, marking attendance");
+                                        markAttendance();
+                                    } else {
+                                        Log.e(TAG, "Expected WiFi network not found");
+                                        myButton.setText("Incorrect WiFi Network");
+                                        myButton.setEnabled(true);
+                                        myButton.setBackgroundColor(getResources().getColor(R.color.lightGreen, null));
+                                        new AlertDialog.Builder(StudentView.this)
+                                                .setTitle("Verification Failed")
+                                                .setMessage("The expected WiFi network was not found among available networks. Please try again.")
+                                                .setPositiveButton("OK", null)
+                                                .show();
+                                    }
+                                });
+                                return Unit.INSTANCE;
+                            }
+                        }, firebaseSSID);
                     } else {
-                        Log.e(TAG, "Expected WiFi network not found");
-                        myButton.setText("Incorrect WiFi Network");
-                        myButton.setEnabled(true);
+                        Log.e(TAG, "Not in proximity of teacher");
+                        myButton.setText("Not in proximity of teacher");
+                        myButton.setEnabled(true); // Re-enable to let them try again
                         myButton.setBackgroundColor(getResources().getColor(R.color.lightGreen, null));
-                        new AlertDialog.Builder(StudentView.this)
-                                .setTitle("Verification Failed")
-                                .setMessage("The expected WiFi network was not found among available networks. Please try again.")
-                                .setPositiveButton("OK", null)
-                                .show();
+                        Toast.makeText(StudentView.this,
+                                "You are not within 10 meters of the teacher. Cannot mark attendance.",
+                                Toast.LENGTH_LONG).show();
                     }
                 });
+
                 return Unit.INSTANCE;
             }
-        }, firebaseSSID);
+        });
     }
 
     private void setNumberSelection(TextView textView) {
