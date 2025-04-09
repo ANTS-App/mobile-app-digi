@@ -577,9 +577,7 @@ public class StudentView extends AppCompatActivity {
     private void startBluetoothScan() {
         bluetoothHelper.scanForTeacherBluetooth(isTeacherInRange -> {
             if (isTeacherInRange) {
-                Toast.makeText(StudentView.this, "Teacher's device found!", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(StudentView.this, "Teacher's device not found.", Toast.LENGTH_SHORT).show();
             }
             return null;
         });
